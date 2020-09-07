@@ -40,7 +40,11 @@
         (append (pick-random '((you seem to think that)
                                (you feel that)
                                (why do you believe that)
-                               (why do you say that))
+                               (why do you say that)
+                               ; 1-1 добавил реплики
+                               (why do you think that)
+                               (you believe that)
+                               (you think that))
                 )
                 (change-person user-response)
         )
@@ -86,7 +90,10 @@
        (pick-random '((please go on)
                        (many people have the same sorts of feelings)
                        (many of my patients have told me the same thing)
+                       ; 1-1 добавил реплики
                        (please continue)
+                       (it is ok)
+                       (it is normal nowadays)
                        )
          )
 )
