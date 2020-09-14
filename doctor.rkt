@@ -7,12 +7,12 @@
 (define (visit-doctor name)
   (printf "Hello, ~a!\n" name)
   (print '(what seems to be the trouble?))
-  (doctor-driver-loop name)
+  (doctor-driver-loop name #t null)
 )
 
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
-(define (doctor-driver-loop name)
+(define (doctor-driver-loop name is-begin? history-replicas)
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read)))
@@ -20,19 +20,26 @@
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
              (printf "Goodbye, ~a!\n" name)
              (print '(see you next week)))
-            (else (print (reply user-response)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
-                  (doctor-driver-loop name)
+            (else (print (reply user-response is-begin? history-replicas)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+                  (doctor-driver-loop name #f (cons (change-person user-response) history-replicas))
              )
        )
       )
 )
 
 ; генерация ответной реплики по user-response -- реплике от пользователя 
-(define (reply user-response)
+(define (reply user-response is-begin? history-replicas)
+  (if is-begin?  
       (case (random 2) ; с равной вероятностью выбирается один из двух способов построения ответа
           ((0) (qualifier-answer user-response)) ; 1й способ
           ((1) (hedge))  ; 2й способ
       )
+      (case (random 3) ; с равной вероятностью выбирается один из двух способов построения ответа
+          ((0) (qualifier-answer user-response)) ; 1й способ
+          ((1) (hedge))  ; 2й способ
+          ((2) (history-answer history-replicas))  ; 3й способ
+      )
+   )
 )
 			
 ; 1й способ генерации ответной реплики -- замена лица в реплике пользователя и приписывание к результату нового начала
@@ -120,3 +127,9 @@
                        )
          )
 )
+
+; 3й способ генерации ответной реплики -- earlier you said + вспоминаем старую фразу
+(define (history-answer history-replicas)
+  (append '(earlier you said that) (list-ref history-replicas (random (length history-replicas)))
+    )
+  )
