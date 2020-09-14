@@ -57,7 +57,7 @@
 
 ; замена лица во фразе			
 (define (change-person phrase)
-        (many-replace '((am are)
+        (many-replace3 '((am are)
                         (are am)
                         (i you)
                         (me you)
@@ -76,13 +76,36 @@
         (cond ((null? lst) lst)
               (else (let ((pat-rep (assoc (car lst) replacement-pairs))) ; Доктор ищет первый элемент списка в ассоциативном списке замен
                       (cons (if pat-rep (cadr pat-rep) ; если поиск был удачен, то в начало ответа Доктор пишет замену
-                                (car lst) ; иначе в начале ответа помещается начало списка без изменений
-                            )
+                                        (car lst) ; иначе в начале ответа помещается начало списка без изменений
+                              )
                             (many-replace replacement-pairs (cdr lst)) ; рекурсивно производятся замены в хвосте списка
                         )
                      )
                )
          )
+  )
+
+
+; 1-2 новая реализация many-replace
+; https://stackoverflow.com/questions/16221336/error-with-define-in-racket
+(define (many-replace2 replacement-pairs lst)
+        (let loop ((lst lst) (result null))
+          (cond ((null? lst) (reverse result))
+                (else (loop (cdr lst) (cons (if (assoc (car lst) replacement-pairs) (cadr (assoc (car lst) replacement-pairs))
+                                                                                    (car lst))
+                                            result)
+                    
+                        )
+                  )
+            )
+          )
+  )
+
+; 1-3 новая реализация many-replace
+(define (many-replace3 replacement-pairs lst)
+  (map (lambda (x)(if (assoc x replacement-pairs) (cadr (assoc x replacement-pairs)) x)
+                    )
+          lst)
   )
 
 ; 2й способ генерации ответной реплики -- случайный выбор одной из заготовленных фраз, не связанных с репликой пользователя
