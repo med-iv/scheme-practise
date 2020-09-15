@@ -2,9 +2,21 @@
 #lang scheme/base
 ; В учебных целях используется базовая версия Scheme
 
+
+; 2-5
+(define (ask-patient-name)
+ (begin
+  (println '(next!))
+  (println '(who are you?))
+  (print '**)
+  (car (read))
+ ) 
+)
+
+
 ; основная функция, запускающая "Доктора"
 ; параметр name -- имя пациента
-(define (visit-doctor name)
+(define (visit-doctor stopword max-patients)
   (printf "Hello, ~a!\n" name)
   (print '(what seems to be the trouble?))
   (doctor-driver-loop name #t null)
