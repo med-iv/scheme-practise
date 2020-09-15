@@ -17,6 +17,8 @@
 ; основная функция, запускающая "Доктора"
 ; параметр name -- имя пациента
 (define (visit-doctor stopword max-patients)
+  (cond
+    ((equal? max-patients 0) (printf
   (printf "Hello, ~a!\n" name)
   (print '(what seems to be the trouble?))
   (doctor-driver-loop name #t null)
@@ -24,14 +26,15 @@
 
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
-(define (doctor-driver-loop name is-begin? history-replicas)
+(define (doctor-driver-loop name is-begin? history-replicas max-patients)
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read)))
       (cond 
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
              (printf "Goodbye, ~a!\n" name)
-             (print '(see you next week)))
+             (print '(see you next week))
+             ()
             (else (print (reply user-response is-begin? history-replicas)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (doctor-driver-loop name #f (cons (change-person user-response) history-replicas))
              )
