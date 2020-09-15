@@ -4,15 +4,17 @@
 
 ; основная функция, запускающая "Доктора"
 ; параметр name -- имя пациента
+; убрать флаг из параметров 
+
 (define (visit-doctor name)
   (printf "Hello, ~a!\n" name)
   (print '(what seems to be the trouble?))
-  (doctor-driver-loop name #t null)
+  (doctor-driver-loop name null)
 )
 
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
-(define (doctor-driver-loop name is-begin? history-replicas)
+(define (doctor-driver-loop name history-replicas)
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read)))
@@ -20,27 +22,21 @@
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
              (printf "Goodbye, ~a!\n" name)
              (print '(see you next week)))
-            (else (print (reply user-response is-begin? history-replicas)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
-                  (doctor-driver-loop name #f (cons (change-person user-response) history-replicas))
+            (else (print (reply user-response history-replicas)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+                  (doctor-driver-loop name (cons (change-person user-response) history-replicas))
              )
        )
       )
 )
 
 ; генерация ответной реплики по user-response -- реплике от пользователя 
-(define (reply user-response is-begin? history-replicas)
-  (if is-begin?  
-      (case (random 2) ; с равной вероятностью выбирается один из двух способов построения ответа
-          ((0) (qualifier-answer user-response)) ; 1й способ
-          ((1) (hedge))  ; 2й способ
-      )
-      (case (random 3) ; с равной вероятностью выбирается один из двух способов построения ответа
+(define (reply user-response history-replicas)
+      (case (random (if (equal? null history-replicas) 2 3)) ; с равной вероятностью выбирается один из двух способов построения ответа
           ((0) (qualifier-answer user-response)) ; 1й способ
           ((1) (hedge))  ; 2й способ
           ((2) (history-answer history-replicas))  ; 3й способ
       )
    )
-)
 			
 ; 1й способ генерации ответной реплики -- замена лица в реплике пользователя и приписывание к результату нового начала
 (define (qualifier-answer user-response)
@@ -94,12 +90,15 @@
 
 
 ; 1-2 новая реализация many-replace
+; сделать assoc итеративным
 ; https://stackoverflow.com/questions/16221336/error-with-define-in-racket
 (define (many-replace2 replacement-pairs lst)
         (let loop ((lst lst) (result null))
           (cond ((null? lst) (reverse result))
-                (else (loop (cdr lst) (cons (if (assoc (car lst) replacement-pairs) (cadr (assoc (car lst) replacement-pairs))
-                                                                                    (car lst))
+                (else (loop (cdr lst) (cons (let ((pat-rep (assoc (car lst) replacement-pairs)))
+                                              (if pat-rep (cadr pat-rep)
+                                                          (car lst))
+                                              )
                                             result)
                     
                         )
@@ -110,9 +109,11 @@
 
 ; 1-3 новая реализация many-replace
 (define (many-replace3 replacement-pairs lst)
-  (map (lambda (x)(if (assoc x replacement-pairs) (cadr (assoc x replacement-pairs)) x)
+  (map (lambda (x)(let ((pat-rep (assoc x replacement-pairs)))
+                   (if pat-rep (cadr pat-rep) x)
                     )
-          lst)
+         )
+        lst)
   )
 
 ; 2й способ генерации ответной реплики -- случайный выбор одной из заготовленных фраз, не связанных с репликой пользователя
