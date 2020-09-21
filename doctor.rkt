@@ -4,26 +4,47 @@
 
 ; основная функция, запускающая "Доктора"
 ; параметр name -- имя пациента
-; убрать флаг из параметров 
+; убрать флаг из параметров
 
-(define (visit-doctor name)
-  (printf "Hello, ~a!\n" name)
-  (print '(what seems to be the trouble?))
-  (doctor-driver-loop name null)
+
+(define (ask-patient-name)
+ (begin
+  (println '(next!))
+  (println '(who are you?))
+  (print '**)
+  (car (read))
+ ) 
 )
+
+;2-5
+(define (visit-doctor stopword count)
+  (if (equal? count 0) (print '(time to go home))
+      (let ((name (ask-patient-name)))
+       (if (equal? name stopword) (print '(time to go home))
+           (let ()
+            (printf "(hello, ~a)\n" name)
+            (print '(what seems to be the trouble?))
+            (doctor-driver-loop name null stopword count)
+             )
+         )
+        )
+    )
+  )
 
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
-(define (doctor-driver-loop name history-replicas)
+(define (doctor-driver-loop name history-replicas stopword count)
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read)))
       (cond 
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
-             (printf "Goodbye, ~a!\n" name)
-             (print '(see you next week)))
+             (printf "(goodbye, ~a)\n" name)
+             (print '(see you next week))
+             (newline)
+             (visit-doctor stopword (- count 1)))
             (else (print (reply user-response history-replicas)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
-                  (doctor-driver-loop name (cons (change-person user-response) history-replicas))
+                  (doctor-driver-loop name (cons (change-person user-response) history-replicas) stopword count)
              )
        )
       )
