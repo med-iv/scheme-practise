@@ -1,0 +1,11 @@
+#lang scheme/base
+
+(define (square x) (* x x))
+
+(define (prod lst) (foldl + 0 (map square lst)))
+
+(define (norm lst) (expt (prod lst) (/ 1 (length lst))))
+
+(define (task-03-2020 lst)
+   (/ (foldl + 0 (map norm lst)) (length lst))
+  )
