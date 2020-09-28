@@ -16,7 +16,7 @@
  ) 
 )
 
-;2-5
+;2-5 добавил стоп-слово и количество пациентов
 (define (visit-doctor stopword count)
   (if (equal? count 0) (print '(time to go home))
       (let ((name (ask-patient-name)))
@@ -50,12 +50,22 @@
       )
 )
 
+(define (is-replicas history-replicas)
+  (if (equal? null history-replicas) 0 1)
+  )
+
+(define (is-keys user-response)
+  (if (is-keys? user-response keys) 1 0)
+  )
+
 ; генерация ответной реплики по user-response -- реплике от пользователя 
 (define (reply user-response history-replicas)
-      (case (random (if (equal? null history-replicas) 2 3)) ; с равной вероятностью выбирается один из двух способов построения ответа
+      ;(case (random (if (equal? null history-replicas) 3 4))
+       (case (weighted-random '(3 2 0 1) (list (is-replicas history-replicas) (is-keys user-response) 1 1))
           ((0) (qualifier-answer user-response)) ; 1й способ
           ((1) (hedge))  ; 2й способ
-          ((2) (history-answer history-replicas))  ; 3й способ
+          ((2) (keywords-answer user-response))  ; 4й способ
+          ((3) (history-answer history-replicas))  ; 3й способ
       )
    )
 			
@@ -111,8 +121,6 @@
 
 
 ; 1-2 новая реализация many-replace
-; сделать assoc итеративным
-; https://stackoverflow.com/questions/16221336/error-with-define-in-racket
 (define (many-replace2 replacement-pairs lst)
         (let loop ((lst lst) (result null))
           (cond ((null? lst) (reverse result))
@@ -155,3 +163,131 @@
   (append '(earlier you said that) (list-ref history-replicas (random (length history-replicas)))
     )
   )
+
+
+;2-6
+
+(define keywords
+'(( ; начало данных 1й группы
+    (depressed suicide exams university) ; список ключевых слов 1й группы
+    ( ; список шаблонов для составления ответных реплик 1й группы 
+	  (when you feel depressed, go out for ice cream)
+      (depression is a disease that can be treated)
+	)
+  ) ; завершение данных 1й группы
+  ( ; начало данных 2й группы ...
+    (mother father parents brother sister uncle ant grandma grandpa)
+    (
+	  (tell me more about your * , i want to know all about your *)
+      (why do you feel that way about your * ?)
+	)
+  )
+  
+  (
+    (university scheme lections)
+	(
+	  (your education is important)
+	  (how many time do you spend to learning ?)
+	)
+  )
+  
+  ( ; 3-я группа
+    (school university club)
+       (
+         (do you have friends from * ?)
+         (do you like your * ?)
+       )
+  )
+
+  ( ; 4-я группа
+    (club bar cafe restaurant)
+       (
+          (what is your favorite dish ?)
+          (what is your favorite drink ?)
+          (what is your favorite * ?)
+       )
+  )
+))
+
+(define (flatten x)
+  (cond ((null? x) '())
+        ((pair? x) (append (flatten (car x)) (flatten (cdr x))
+                     )
+          )
+        (else (list x))
+    )
+  )
+
+; есть ли ключевое слово
+(define (is-keys? user-response keys)
+  (ormap (lambda (elem)
+           (ormap (lambda (x)
+                     (if (equal? x elem) x
+                         #f
+                      )
+                     ) keys)
+           )
+           user-response)
+  )
+
+
+; список ключей
+(define keys
+  (flatten (map (lambda (elem) (car elem)) keywords))
+  )
+
+; служебная функция
+(define (subs-pick random-n wghts index)
+  (if (not (positive? random-n)) index
+      (subs-pick (- random-n (car wghts)) (cdr wghts) (+ index 1))
+      )
+  )
+
+(define (weighted-random lst wghts)
+  (let* ((sum-w (foldl + 0 wghts))
+          (random-n (+ 1 (random sum-w)))
+          (index (subs-pick (- random-n (car wghts)) (cdr wghts) 0))
+          )
+     (list-ref lst index)
+    )
+  )
+
+
+(define (get-user-keywords user-response)
+  (let* ((cur-keys keys)
+         (is-pres? (lambda (elem) (is-keys? (list elem) cur-keys)))
+         (res (filter is-pres? user-response))
+         )
+    res
+    )
+  )
+
+
+
+         
+(define (values key)
+  (let* ((is-key? (lambda (elem) (is-keys? (car elem) (list key)))
+           )
+         (vals (map (lambda (elem) (cdr elem))
+                             (filter is-key? keywords)
+                       )
+                     
+          )
+         )
+    (map (lambda (x) (car (car x))) vals)
+    )
+  )
+
+                  
+; 4-ая стратегия
+(define (keywords-answer user-response)
+  (let* ((user-keywords (get-user-keywords user-response))
+         (key (pick-random user-keywords))
+         (template (pick-random (values key)))
+         (answer (many-replace3 '((* key)) template))
+         )
+     answer
+    )
+  )
+
+
