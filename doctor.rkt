@@ -6,7 +6,6 @@
 ; параметр name -- имя пациента
 ; убрать флаг из параметров
 
-
 (define (ask-patient-name)
  (begin
   (println '(next!))
@@ -18,22 +17,22 @@
 
 ;2-5 добавил стоп-слово и количество пациентов
 (define (visit-doctor stopword count)
-  (if (equal? count 0) (print '(time to go home))
-      (let ((name (ask-patient-name)))
-       (if (equal? name stopword) (print '(time to go home))
+   (let loop ((name (ask-patient-name))
+              (count count))
+       (if (or (= count 0) (equal? name stopword)) (print '(time to go home))
            (let ()
             (printf "(hello, ~a)\n" name)
             (print '(what seems to be the trouble?))
-            (doctor-driver-loop name null stopword count)
+            (doctor-driver-loop name null)
+            (loop (if (= count 1) name (ask-patient-name)) (- count 1))
              )
          )
-        )
-    )
+      )
   )
 
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
-(define (doctor-driver-loop name history-replicas stopword count)
+(define (doctor-driver-loop name history-replicas)
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read)))
@@ -41,36 +40,25 @@
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
              (printf "(goodbye, ~a)\n" name)
              (print '(see you next week))
-             (newline)
-             (visit-doctor stopword (- count 1)))
+             (newline))
             (else (print (reply user-response history-replicas)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
-                  (doctor-driver-loop name (cons (change-person user-response) history-replicas) stopword count)
+                  (doctor-driver-loop name (cons (change-person user-response) history-replicas))
              )
        )
       )
 )
 
-(define (is-replicas history-replicas)
-  (if (equal? null history-replicas) 0 1)
-  )
-
-(define (is-keys user-response)
-  (if (is-keys? user-response keys) 1 0)
-  )
-
 ; генерация ответной реплики по user-response -- реплике от пользователя 
 (define (reply user-response history-replicas)
-      ;(case (random (if (equal? null history-replicas) 3 4))
-       (case (weighted-random '(3 2 0 1) (list (is-replicas history-replicas) (is-keys user-response) 1 1))
-          ((0) (qualifier-answer user-response)) ; 1й способ
-          ((1) (hedge))  ; 2й способ
-          ((2) (keywords-answer user-response))  ; 4й способ
-          ((3) (history-answer history-replicas))  ; 3й способ
-      )
-   )
+  (let* ((avail-stratigies (filter (lambda (strat) ((predicate strat) user-response history-replicas)) strategies))
+         (wght-strategies (map cdr avail-stratigies))
+        )
+    ((weighted-random wght-strategies) user-response history-replicas)
+    )
+  )
 			
 ; 1й способ генерации ответной реплики -- замена лица в реплике пользователя и приписывание к результату нового начала
-(define (qualifier-answer user-response)
+(define (qualifier-answer user-response history-replicas)
         (append (pick-random '((you seem to think that)
                                (you feel that)
                                (why do you believe that)
@@ -146,7 +134,7 @@
   )
 
 ; 2й способ генерации ответной реплики -- случайный выбор одной из заготовленных фраз, не связанных с репликой пользователя
-(define (hedge)
+(define (hedge user-response history-replicas)
        (pick-random '((please go on)
                        (many people have the same sorts of feelings)
                        (many of my patients have told me the same thing)
@@ -159,14 +147,12 @@
 )
 
 ; 3й способ генерации ответной реплики -- earlier you said + вспоминаем старую фразу
-(define (history-answer history-replicas)
+(define (history-answer user-response history-replicas)
   (append '(earlier you said that) (list-ref history-replicas (random (length history-replicas)))
     )
   )
 
-
 ;2-6
-
 (define keywords
 '(( ; начало данных 1й группы
     (depressed suicide exams university) ; список ключевых слов 1й группы
@@ -177,20 +163,22 @@
   ) ; завершение данных 1й группы
   ( ; начало данных 2й группы ...
     (mother father parents brother sister uncle ant grandma grandpa)
-    (
+       (
 	  (tell me more about your * , i want to know all about your *)
-      (why do you feel that way about your * ?)
-	)
+          (why do you feel that way about your * ?)
+          (are you proud of your family?)
+          (do you love your * ?)
+       )
   )
-  
   (
     (university scheme lections)
 	(
 	  (your education is important)
 	  (how many time do you spend to learning ?)
+          (you are smart)
+          (are you studying now ?)
 	)
   )
-  
   ( ; 3-я группа
     (school university club)
        (
@@ -198,7 +186,6 @@
          (do you like your * ?)
        )
   )
-
   ( ; 4-я группа
     (club bar cafe restaurant)
        (
@@ -209,78 +196,48 @@
   )
 ))
 
-(define (flatten x)
-  (cond ((null? x) '())
-        ((pair? x) (append (flatten (car x)) (flatten (cdr x))
-                     )
-          )
-        (else (list x))
-    )
-  )
-
-; есть ли ключевое слово
-(define (is-keys? user-response keys)
-  (ormap (lambda (elem)
-           (ormap (lambda (x)
-                     (if (equal? x elem) x
-                         #f
-                      )
-                     ) keys)
-           )
-           user-response)
-  )
-
-
 ; список ключей
 (define keys
-  (flatten (map (lambda (elem) (car elem)) keywords))
+  (foldl append '() (map car keywords))
   )
 
-; служебная функция
-(define (subs-pick random-n wghts index)
-  (if (not (positive? random-n)) index
-      (subs-pick (- random-n (car wghts)) (cdr wghts) (+ index 1))
-      )
-  )
-
-(define (weighted-random lst wghts)
-  (let* ((sum-w (foldl + 0 wghts))
+; взвешенный рандом, на вход подается список из пар, первый элемент пары - значение, второй - вес
+; (weighted-random '((1 0) (2 1)))
+(define (weighted-random wght-lst)
+  (define (subs-pick random-n wghts index)
+    (if (not (positive? random-n)) index
+        (subs-pick (- random-n (car wghts)) (cdr wghts) (+ index 1))
+        )
+    )
+  (let* ((wghts (map cadr wght-lst))
+         (sum-w (foldl + 0 wghts))
           (random-n (+ 1 (random sum-w)))
           (index (subs-pick (- random-n (car wghts)) (cdr wghts) 0))
           )
-     (list-ref lst index)
+     (list-ref (map car wght-lst) index)
     )
   )
 
-
+;функция возвращает список из ключевых слов из ответа пользователя
 (define (get-user-keywords user-response)
-  (let* ((cur-keys keys)
-         (is-pres? (lambda (elem) (is-keys? (list elem) cur-keys)))
+  (let* ((is-pres? (lambda (elem) (member elem keys)))
          (res (filter is-pres? user-response))
          )
     res
     )
   )
 
-
-
-         
+;функция возвращает список реплик для данного ключа
 (define (values key)
-  (let* ((is-key? (lambda (elem) (is-keys? (car elem) (list key)))
-           )
-         (vals (map (lambda (elem) (cdr elem))
-                             (filter is-key? keywords)
-                       )
-                     
-          )
+  (let* ((is-pres? (lambda (elem) (member key (car elem))))
+         (vals (map cdr (filter is-pres? keywords)))
          )
-    (map (lambda (x) (car (car x))) vals)
+    (map caar vals)
     )
   )
-
-                  
+               
 ; 4-ая стратегия
-(define (keywords-answer user-response)
+(define (keywords-answer user-response history-replicas)
   (let* ((user-keywords (get-user-keywords user-response))
          (key (pick-random user-keywords))
          (template (pick-random (values key)))
@@ -290,4 +247,24 @@
     )
   )
 
+; есть ли ключевое слово
+(define (is-keys? user-response history-replicas)
+  (ormap (lambda (elem)
+           (ormap (lambda (x) (if (equal? x elem) x #f)) keys)
+           ) user-response)
+  )
 
+;были ли у пользователя репликиы
+(define (is-replicas? user-response history-replicas)
+  (equal? null history-replicas)
+  )
+
+
+;список стратегий с функциями-предикатами и весами
+(define strategies (list (list (lambda (a1 a2) #t) qualifier-answer 1)
+                         (list (lambda (a1 a2) #t) hedge 1)
+                         (list is-keys? keywords-answer 1)
+                         (list is-replicas? history-answer 1)
+                         )
+  )
+(define (predicate str) (list-ref str 0))
