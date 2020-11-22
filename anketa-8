@@ -1,0 +1,34 @@
+#lang scheme/base
+(require racket/stream)
+(define ones (stream-cons 1 ones))
+(define (ints-from n)
+  (stream-cons n (ints-from (+ n 1))))
+(define ints (ints-from 1))
+
+; поток степеней, начиная с первой степени
+(define (powers x)
+  (let pow-gen ((a x)
+                (b x))
+    (stream-cons a (pow-gen (* a b) b))))
+
+; объединение потоков с сортировкой  
+(define (sorted-interleave str1 str2)
+  (if (< (stream-first str1) (stream-first str2)) 
+     (stream-cons (stream-first str1)
+                  (sorted-interleave str2 (stream-rest str1)))
+     (stream-cons (stream-first str2)
+                  (sorted-interleave str1 (stream-rest str2))))
+  )
+; итоговый поток  
+(define res (stream-cons 1 (sorted-interleave (powers 2) (powers 3))))
+
+(stream-ref res 0)
+(stream-ref res 1)
+(stream-ref res 2)
+(stream-ref res 3)
+(stream-ref res 4)
+(stream-ref res 5)
+(stream-ref res 6)
+(stream-ref res 7)
+(stream-ref res 8)
+ 

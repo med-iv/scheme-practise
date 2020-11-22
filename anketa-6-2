@@ -1,0 +1,27 @@
+#lang scheme/base
+(define (sum-div numb)
+    (let loop ((amount numb)
+                   (sum 0))
+      (cond ((= amount 1) (+ sum 1))
+            ((= (modulo numb amount) 0) (loop (- amount 1) (+ sum amount)))
+            (else (loop (- amount 1) sum)))))
+(define (even-deficient n)    
+  (let main-loop ((amount n)
+             (cur-number 1))
+    (cond ((= amount 0) (sub1 cur-number))
+          ((odd? cur-number) (main-loop amount (add1 cur-number)))
+          ((< (sum-div cur-number) (* 2 cur-number)) (main-loop (sub1 amount) (add1 cur-number)))
+          (else (main-loop amount (add1 cur-number))))))
+
+(define ht (make-hash))
+(define (memo-even-deficient n)
+  (let ((lkup (hash-ref ht n #f)))
+    (if lkup lkup 
+        (let main-loop ((amount 0)
+                        (cur-number 1))
+          (cond ((= amount n) (begin (hash-set! ht n (sub1 cur-number)) (sub1 cur-number)))
+                ((odd? cur-number) (main-loop amount (add1 cur-number)))
+                ((hash-ref ht (add1 amount) #f) (main-loop (add1 amount) (add1 (hash-ref ht (add1 amount) #f))))
+                ((< (sum-div cur-number) (* 2 cur-number)) (main-loop (add1 amount) (add1 cur-number)))
+                (else (main-loop amount (add1 cur-number))))))))
+  

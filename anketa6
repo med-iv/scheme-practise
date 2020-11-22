@@ -1,0 +1,25 @@
+#lang scheme/base
+(require scheme/mpair)
+;конструктор очереди
+(define (make-queue) (mcons 'queue (mcons '() '())))
+;чекеры очереди
+(define (queue? q) (and (mpair? q) (eq? 'queue (mcar q))))
+(define (empty-queue? q) (and (queue? q) (null? (mcar (mcdr q)))))
+(define (front-ptr q) (mcar (mcdr q)))
+(define (real-ptr q) (mcdr (mcdr q)))
+(define (set-front-ptr! q item) (set-mcar! (mcdr q) item))
+(define (set-real-ptr! q item) (set-mcdr! (mcdr q) item))
+;селектор очереди
+(define (front-queue q)
+  (if (and (queue? q) (not (empty-queue? q)))
+      (mcar (mcar (mcdr q)))
+      (error "exception")
+      ))
+(define (insert-queue! q e)
+  (let ((new-pair (mcons e '())))
+    (cond ((empty-queue? q) (set-front-ptr! q new-pair) (set-real-ptr! q new-pair) q)
+          (else (begin (set-mcdr! (real-ptr q) new-pair) (set-real-ptr! q new-pair) q))
+          )))
+(define (delete-queue! q)
+  (set-front-ptr! q (mcdr (front-ptr q)))
+  )
