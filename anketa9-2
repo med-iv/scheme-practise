@@ -1,0 +1,46 @@
+#lang scheme/base
+(require racket/class)
+(define 2tree-interface<%> (interface () isEmpty? printTree))
+(define Empty2tree%
+  (class* object% (2tree-interface<%>)
+    (super-new)
+    (define/public (isEmpty?) #t)
+    (define/public (printTree) '())))
+
+(define Nonempty2tree%
+  (class* object% (2tree-interface<%>)
+    (super-new)
+    (init-field tag data)
+    (field (left null) (right null))
+    (define/public (isEmpty?) #f)
+    (define/public (get-tag) tag)
+    (define/public (get-data) data)
+    (define/public (set-tag! tg) (set! tag tg))
+    (define/public (set-data! dt) (set! data dt))
+    (define/public (get-left) left)
+    (define/public (get-right) right)
+    (define/public (set-left! lft) (set! left lft))
+    (define/public (set-right! rgt) (set! right rgt))
+    (define/public (printTree) (
+       begin
+         (if (not (null? right))
+             (send right printTree) null)
+         (print tag)
+         (newline)
+         (if (not (null? left))
+             (send left printTree) null)))))
+
+; tests
+(define emp (new Empty2tree%))
+(send emp printTree)
+(define non-emp (new Nonempty2tree% (tag 0) (data 1)))
+(get-field tag non-emp)
+(get-field left non-emp)
+(send non-emp get-tag)
+(send non-emp set-tag! 3)
+(send non-emp get-tag)
+(define non-emp-left (new Nonempty2tree% (tag 1) (data 1)))
+(send non-emp set-left! non-emp-left)
+(define non-emp-right (new Nonempty2tree% (tag 2) (data 1)))
+(send non-emp set-right! non-emp-right)
+(send non-emp printTree)

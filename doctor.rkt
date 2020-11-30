@@ -278,4 +278,4 @@
 (define (predicate str) (list-ref str 0))
 
 
-(visit-doctor "gg" 3)
+;(visit-doctor "goodbye" 3)

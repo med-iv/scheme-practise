@@ -1,5 +1,0 @@
-#lang scheme/base
-
-(define (2n-1!-list n)
-  (let loop ((acc 1) (counter n) (i 1))
-    (cond(odd? 1)
