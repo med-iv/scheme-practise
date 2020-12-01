@@ -8,8 +8,11 @@
 (require racket/format)
 (require racket/set)
 
+(require "vesna.rkt")
+(init "prod")
+
 ; множество знаков пунктуации
-(define punct (set "," ";" ":"))
+;(define punct (set "," ";" ":"))
 
 (define (ask-patient-name)
  (begin
@@ -36,7 +39,7 @@
   (regexp-replace* #rx" ([,;:.\\!\\?])" (string-join lst) "\\1"))
 
 ;spring
-(define (lint user-response)
+(define (lint-resp user-response)
   (let* ((sent (car (string-split user-response #rx"[\\.\\?!]")))
          (letters (string-split sent ""))
          (enchance-letters (map (lambda (x) (if (set-member? punct x) (string-append " " x) x)) letters))
@@ -55,7 +58,7 @@
 	    ((equal? user-response "goodbye") ; реплика "goodbye" служит для выхода из цикла
              (printf "goodbye, ~a\n" name)
              (printf "see you next week\n"))
-            (else (let ((prep (lint user-response))) 
+            (else (let ((prep (lint-resp user-response))) 
              (printf (join-lst (reply prep history-replicas))) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (doctor-driver-loop name (cons (change-person prep) history-replicas))
              )))))
@@ -264,7 +267,7 @@
 
 ;были ли у пользователя репликиы
 (define (is-replicas? user-response history-replicas)
-  (equal? null history-replicas)
+  (not (equal? null history-replicas))
   )
 
 
@@ -273,9 +276,10 @@
                          (list (lambda (a1 a2) #t) hedge 1)
                          (list is-keys? keywords-answer 1)
                          (list is-replicas? history-answer 1)
+                         (list (lambda (a1 a2) #t) mixted-generator 4)
                          )
   )
 (define (predicate str) (list-ref str 0))
 
 
-;(visit-doctor "goodbye" 3)
+(visit-doctor "goodbye" 3)

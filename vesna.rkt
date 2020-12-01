@@ -4,13 +4,15 @@
 (require racket/set)
 (require racket/vector)
 
-(define N 5)
+(provide (all-defined-out))
+
+(define N 3)
 (define punct (set "," ";" ":" "." "!" "?"))
 (define end_punct (set "." "!" "?" "$"))
 ;(define train (open-input-file "dummy_texts.txt"))
-(define train_data "dummy_texts.txt")
+(define train_data "good.txt")
 
-(define dump_name "dump.txt")
+(define dump_name "good_dump.txt")
 
 (define direct-graph (make-hash))
 (define reverse-graph (make-hash))
@@ -33,6 +35,7 @@
             (let* ((linted-line (lint line))
                    (ngrams (gen-ngrams linted-line N))
                    (bigrams (gen-ngrams linted-line 2)))
+              (if (< (vector-length ngrams) N) (loop-line)
               ; идем циклом по вектору n-gram, пустой список гарантированно не будет
               (let ngram-loop ((ngram (vector-ref ngrams 0))
                                 (ngrams (vector-drop ngrams 1))
@@ -55,13 +58,13 @@
                  (cond ((not (vector-empty? ngrams)) (ngram-loop (vector-ref ngrams 0) (vector-drop ngrams 1) is-bigrams n))
                        (is-bigrams (ngram-loop (vector-ref bigrams 0) (vector-drop bigrams 1) #f 2))
                        (else (loop-line))
-                       )))))))))
+                       ))))))))))
 
 ; возвращает вектор, где каждый элемент вектора - n-грамма, каждая n-gramm - vector                 
 (define (gen-ngrams linted-line n) 
   (let* ((sent (list->vector linted-line))
          (l (+ (- (vector-length sent) n) 1)))
-    (if (< l 0) (void)
+    (if (< l 0) #()
     (begin
       (let ((result (make-vector l)))
       (let loop ((iter (- l 1))
@@ -123,12 +126,33 @@
     ))
 
 ; смешанная стратегия, на вход поступает вектор предложения
-(define (mixted-generator sentence)
-  (let* ((index (random (- (vector-length sentence) N)))
-         (first-ngram (vector-take (vector-drop sentence (- index 1)) N)))
-    (begin
-      ; здесь будет так, есть n-грамма - ок, иначе ищем биграмму - нет, тупой прямой генератор
-      (cond ((
+(define (mixted-generator raw-sentence history-replicas)
+  (let* ((sentence (list->vector raw-sentence))
+         (len (vector-length sentence)))
+    (if (> len (- N 1))
+        (let* ((index (random (- (vector-length sentence) (- N 1))))
+               (first-ngram (vector-take (vector-drop sentence (- index 0)) (- N 1))))
+          ; присоединяем задний + n-gram + передний выхлоп
+          (vector->list (vector-append (let ((nvalue (hash-ref reverse-graph first-ngram #f)))
+                           (if nvalue (backward-loop #() first-ngram nvalue)
+                               ; если нет, то проверяем есть ли би-грамма
+                               (let* ((bigram (vector-ref first-ngram (- N 2)))
+                                      (bivalue (hash-ref reverse-graph bigram #f)))
+                                 ; если нет, то ничего не делаем
+                                 (if bivalue (backward-loop #() bigram bivalue)
+                                     #()))))
+          (vector-append first-ngram
+                         ; проверяем есть ли n-грамма
+                         (let ((nvalue (hash-ref direct-graph first-ngram #f)))
+                           (if nvalue (forward-loop #() first-ngram nvalue)
+                               ; если нет, то проверяем есть ли би-грамма
+                               (let* ((bigram (vector-ref first-ngram (- N 2)))
+                                      (bivalue (hash-ref direct-graph bigram #f)))
+                                 ; если нет, то простая прямая генерация
+                                 (if bivalue (forward-loop #() bigram bivalue)
+                                     (direct-generator)))))))))
+        ; если предложение маленькое, то вряд-ли будет что-то осмысленное
+        (vector->list (direct-generator)))))
          
          
 
@@ -157,3 +181,5 @@
 (define (test-func)
   (init "prod"))
 (test-func)
+
+; (mixted-generator #("There" "were" "the" "times" "There" "were" "the" "times") '())
