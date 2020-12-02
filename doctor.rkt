@@ -276,7 +276,7 @@
                          (list (lambda (a1 a2) #t) hedge 1)
                          (list is-keys? keywords-answer 1)
                          (list is-replicas? history-answer 1)
-                         (list (lambda (a1 a2) #t) mixted-generator 4)
+                         (list (lambda (a1 a2) #t) mixted-generator 10)
                          )
   )
 (define (predicate str) (list-ref str 0))

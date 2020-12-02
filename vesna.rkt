@@ -10,9 +10,9 @@
 (define punct (set "," ";" ":" "." "!" "?"))
 (define end_punct (set "." "!" "?" "$"))
 ;(define train (open-input-file "dummy_texts.txt"))
-(define train_data "good.txt")
+(define train_data "bad.txt")
 
-(define dump_name "good_dump.txt")
+(define dump_name "bad_dump.txt")
 
 (define direct-graph (make-hash))
 (define reverse-graph (make-hash))
@@ -80,34 +80,33 @@
 (define (direct-generator)
   (let* ((index (random (hash-count direct-graph)))
          (first-ngram (hash-iterate-key direct-graph index))
-         (value (hash-ref direct-graph first-ngram))
-         (word (weighted-random-vector (vector->list value))))
-    (forward-loop first-ngram first-ngram word)))
+         (value (hash-ref direct-graph first-ngram)))
+    (forward-loop first-ngram first-ngram value)))
 
 ; генератор вперед     
 (define (forward-loop sentence
                      ngram
-                     word)
+                     vector-word-wghts)
+  (let ((word (weighted-random-vector (vector->list vector-word-wghts))))
       (if (set-member? end_punct word)
           (vector-append sentence (make-vector 1 word))
           (let* ((sentence (vector-append sentence (make-vector 1 word)))
                  (ngram (vector-append (vector-drop ngram 1) (make-vector 1 word)))
-                 (new-value (hash-ref direct-graph ngram))
-                 (new-word (weighted-random-vector (vector->list new-value))))
-            (forward-loop sentence ngram new-word))))
+                 (new-value (hash-ref direct-graph ngram)))
+            (forward-loop sentence ngram new-value)))))
 
 
 ; генератор назад     
 (define (backward-loop sentence
                      ngram
-                     word)
+                     vector-word-wghts)
+  (let ((word (weighted-random-vector (vector->list vector-word-wghts))))
       (if (set-member? end_punct word)
-          (sentence)
+          sentence
           (let* ((sentence (vector-append (make-vector 1 word) sentence))
-                 (ngram (vector-append (make-vector 1 word) (vector-drop ngram 1)))
-                 (new-value (hash-ref reverse-graph ngram))
-                 (new-word (weighted-random-vector (vector->list new-value))))
-            (backward-loop sentence ngram new-word))))
+                 (ngram (vector-append (make-vector 1 word) (vector-take ngram (- N 2))))
+                 (new-value (hash-ref reverse-graph ngram)))
+            (backward-loop sentence ngram new-value)))))
 
 
 ;взвешенный рандом для вектора
@@ -179,7 +178,7 @@
   (close-input-port dump))
 
 (define (test-func)
-  (init "prod"))
+  (init "pro"))
 (test-func)
 
-; (mixted-generator #("There" "were" "the" "times" "There" "were" "the" "times") '())
+; (mixted-generator (list "i" "am" "unhappy") '())

@@ -1,0 +1,56 @@
+there were the times when people told it like it is. 
+memes will save the world.
+debugging pro-tip: have enough sleep.
+found a bug in  minutes after waking up from a  hour sleep.
+was chasing the test failure a few days before, without success.
+i'm looking for a phd intern to join me summer  at fair ny to work on ml.
+first i joined twitter to follow scala devs.
+this give and take us both calm and chaotic.
+another technical debt i'm currently paying - configuring strict linting and compilation options.
+it's an awesome milestone that shows the amazing potential of ai for natural sciences.
+with default enabled verification, the legit behavior on broken class file is verifyerror.
+with disabled verification, the legit behavior is jvm crash during classloading, jit, gc, anything, or after any of the above.
+friends do not let friends disable bytecode verification.
+learn how to leverage the power of databricks to solve the challenges of reputation risk by measuring brand perception and bringing together multiple stakeholders to work collaboratively to drive higher levels of customer satisfaction and trust.
+we have received these beautiful selfies from the first participants of the functional scala  scholarship program.
+i highlighted these issues with raft back in  but was told that my example scenarios were contrived and that partial networks failures were unrealistic in modern datacenters.
+now one of these contrived scenarios is the source of a  hour cloudflare outage.
+i've added a dark theme to my website, automatically switched on when dark mode is enabled on your system.
+casp is both the gold standard for assessing predictive techniques and a unique global community built on shared endeavour. 
+accuracy is measured on a range of - gdt. alphafold has a median score of . gdt across all targets - its average error about the width of an atom.
+those who say mac os is pretty much like linuxbsd should be assigned tasks that would emphasize how it is very much not.
+i've been using the dark reader extension for firefox.
+the problem with dark reader is that it penalizes websites that support dark mode properly. it can also slow down rendering significantly.
+and the visitor will just assume it's the website's fault.
+oracle having a tough month. 
+tune in to see how users are switching to databricks modern, cloud-based platform and using it to drive innovation, productivity and business outcomes.
+this on-demand webinar covers how to lower cost and scale and enable data-driven innovation.
+the coffee machine is broken.
+i'm super excited to see this launch, and can't wait to see what customers build with it. 
+supporting containers up to gb along with lambda's super fast scaling was tricky, and i'm proud of the technology the team developed to make it happen.
+so, hows narecletwrimo going?
+congrats on the launch all!
+joe biden will be president in  days.
+nobody asked but my favorite villain is brick top.
+just for completeness my favorite henchman is the cigar-smoking man from dragons forever.
+artificial intelligence has solved one of biologys grand challenges: predicting how proteins curl up from a linear chain of amino acids into d shapes that allow them to carry out lifes tasks.
+what ever happened to the boaters for trump?
+an artificial intelligence network developed by google ai offshoot deepmind has made a gargantuan leap in solving one of biologys grandest challenges  determining a proteins d shape from its amino-acid sequence.
+only  days until we get to call joe biden president of the united states.
+now look at how the price of power from renewables has changed.
+in the last  years power from new wind power plants became  cheaper. 
+power from new solar got  cheaper! from  per mwh to .
+tn this qa post we cover what major features went into the release of akka ., which optimizations and bug fixes were added, and what other lightbend technologies benefit from the features in akka ..
+trump retweeted a tweet that says, why bother voting for republicans?
+holy fucking shit, donald trump has tested positive for being a stupid loser.
+fun fact: the stock market has soared since joe biden won, with the dow having its best month since .
+model serving on databricks is now in public preview and provides cost-effective, one-click deployment of models for real-time inference, tightly integrated with the mlflow model registry for ease of management.
+let us know what you think!
+so the strangest thing happened tonight as i was taking crow pictures at sunset.
+for about  seconds, the crows registered as bright blue on the camera. 
+they did not look like this to the eye. all images are the unretouched jpegs straight out of the camera.
+can anyone explain?
+are you ready to get started on part  of this blog series? 
+now that youve built your microservices poc locally, is time to use sbts native packager to containerize the poc, and then deploy and run in docker.
+there are fewer things to go wrong, fewer decisions to be made. 
+you wont need to worry about using the right libraries or the right protocols, because all of that is managed for you by the backend.
